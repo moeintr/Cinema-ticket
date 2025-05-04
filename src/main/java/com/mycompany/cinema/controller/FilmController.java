@@ -1,26 +1,29 @@
 package com.mycompany.cinema.controller;
 
 import com.mycompany.cinema.entity.Film;
-import com.mycompany.cinema.entity.TicketPurchase;
+
 import com.mycompany.cinema.service.FilmService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/film")
 public class FilmController {
 
     private final FilmService filmService;
 
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
-
+    @GetMapping("/getAll")
     public List<Film> getAll() {
-        return FilmService.getInstance().getAll();
+        return filmService.getAll();
     }
-    public void saveAll(List<Film> films) {
-        FilmService.getInstance().saveAll(films);
-    }
-    public TicketPurchase buyTicket(String title, Integer totalNumber) {
-        return FilmService.getInstance().buyTicket(title, totalNumber);
+    @PostMapping("/save")
+    public void save(Film film) {
+        filmService.save(film);
     }
 }

@@ -9,17 +9,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.io.Serializable;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
 @Data
 @Entity
-public class Film implements Serializable {
+public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long filmId;
-    private String title;
-    private Integer availableTickets;
-    private Long price;
+    private Long userId;
+    private String firstName;
+    private String lastName;
+    private String username;
+    private String password;
 }

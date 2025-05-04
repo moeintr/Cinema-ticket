@@ -1,26 +1,45 @@
 package com.mycompany.cinema.service;
 
+import com.mycompany.cinema.entity.Film;
 import com.mycompany.cinema.entity.TicketPurchase;
-import com.mycompany.cinema.repository.TicketPurchaseFileRepository;
-
+import com.mycompany.cinema.entity.User;
+import com.mycompany.cinema.exception.NotEnoughTicketException;
+import com.mycompany.cinema.exception.NotFoundFilmException;
+import com.mycompany.cinema.repository.FilmRepository;
+import com.mycompany.cinema.repository.TicketPurchaseRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 import java.util.List;
 
-public class TicketPurchaseService implements Service<TicketPurchase>{
-    private TicketPurchaseService() {
-    }
-    private static final TicketPurchaseService TICKET_PURCHASE_SERVICE = new TicketPurchaseService();
-
-    public static TicketPurchaseService getInstance() {
-        return TICKET_PURCHASE_SERVICE;
-    }
-
-    @Override
+@Service
+@RequiredArgsConstructor
+public class TicketPurchaseService {
+    private final TicketPurchaseRepository ticketPurchaseRepository;
+    private final FilmRepository filmRepository;
     public List<TicketPurchase> getAll() {
-        return TicketPurchaseFileRepository.getInstance().findAll();
+        return ticketPurchaseRepository.findAll();
     }
 
-    @Override
-    public void saveAll(List<TicketPurchase> ticketPurchaseServices) {
-        TicketPurchaseFileRepository.getInstance().saveAll(ticketPurchaseServices);
+    @Transactional
+    public TicketPurchase buyTicket(User user, String title, Integer totalNumber) {
+        Film foundFilm = filmRepository.findFilmByTitle(title)
+                .orElseThrow(() -> new NotFoundFilmException("film not found"));
+
+        if (totalNumber > foundFilm.getAvailableTickets()) {
+            throw new NotEnoughTicketException("film has not enough ticket");
+        }
+
+        foundFilm.setAvailableTickets(foundFilm.getAvailableTickets() - totalNumber);
+        filmRepository.save(foundFilm);
+
+        TicketPurchase ticketPurchase = new TicketPurchase()
+                .setUser(user)
+                .setFilm(foundFilm)
+                .setTotalNumber(totalNumber)
+                .setTotalCost(totalNumber * foundFilm.getPrice());
+
+        ticketPurchaseRepository.save(ticketPurchase);
+        return ticketPurchase;
     }
 }
